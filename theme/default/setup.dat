@@ -1,0 +1,31 @@
+<? 
+global $filefirst, $path, $device, $device_tag;
+
+$filefirst = "media";
+
+require("lib/config.php");
+
+require_once("lib/template.php");
+
+$opt = ($_GET['opt'] != "") ? $_GET['opt'] : "preferences.htm";
+
+$thizpage = new Page("/opt/sybhttpd/default/$opt");
+
+$tagz = array( "// setup" => "// Setup",
+		"side_setup" => "side_pc",
+		"</td></tr></table></td></tr></table></form></body>" => "</form>",
+		"file:///opt/sybhttpd/localhost.images/hd/" => "$template_path/images/",
+		"file:///opt/sybhttpd/localhost.images/hd/" => "$template_path/images/",
+);
+
+foreach ($tagz as $tag => $data) {
+	$thizpage->page = eregi_replace($tag, $data, $thizpage->page);
+} unset($tag); unset($data);
+
+$thizpage->page = preg_replace('/head>.*?form/ms', 'form', $thizpage->page);
+$thizpage->page = preg_replace('/<table.*?<table.*?<table.*?<table/ms', '<table', $thizpage->page);
+$thizpage->page = preg_replace('/<table.*?<table.*?<table.*?<table/ms', '<table', $thizpage->page);
+
+$thizpage->output();
+
+?>

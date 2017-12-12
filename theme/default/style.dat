@@ -1,0 +1,13 @@
+<? require("lib/config.php"); ?>
+	<style type="text/css">
+		.menu {font-size:22px;color:#B1D3F6;font-weight:bold;}
+		.menu_h {font-size:22px;color:#FFCC00;font-weight:bold;}
+		.txt {font-size:20px;color:#A8D1E6;font-weight:bold;}
+		.boxtxt {font-size:18px;color:#91B3D0;font-weight:bold;}
+		.status {font-size:20px;color:#639FBE;}
+		.server {font-size:20px;color:#5C9CC2;font-weight:bold;}
+		.button {font-size:20px;color:#A8D1E6;}
+		.pagination {font-size:18px;color:#80B2D9;font-weight:bold;}
+		.list {font-size:<?=(20*$relative_size)?>px;color:#B1D3F6;font-weight:bold;}
+		.title {font-size:24px;color:#CEE9F0;font-weight:bold;}
+	</style>

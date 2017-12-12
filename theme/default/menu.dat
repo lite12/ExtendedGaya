@@ -1,0 +1,62 @@
+<? global $filefirst, $path, $device, $device_tag; ?>
+<? require("lib/config.php"); ?>
+<? if ($path != "setup") { ?>
+					<tr>
+						<td align="right" >
+							<table border="0" cellspacing="0" cellpadding="0">
+	 							<tr>
+									<td width="250" valign="middle" align="right"><a href="{media}" name="media" onkeyrightset="{filefirst}" onkeyleftset="media" onkeyupset="media" class="menu" style="width:180">&nbsp;{mediasources}&nbsp;</a></td>
+									<td width="20" height="40" valign="middle" align="right"><img src="{theme_path}/images/rect.png" width="16" height="12"></td>
+								</tr>
+								<tr>
+									<td valign="middle" align="right"><a href="file:///opt/sybhttpd/default/webservices_list.html" name="web" onkeyrightset="{filefirst}" onkeyleftset="web" onkeyupset="media" class="menu" style="width:180">&nbsp;{webservices}&nbsp;</a></td>
+									<td height="40" valign="middle" align="right"><img src="{theme_path}/images/rect.png" width="16" height="12"></td>
+								</tr>
+								<tr><td height="10" colspan="2"></td></tr>
+								<tr>
+									<td valign="middle" align="right"><a href="<?="$link/index.php?path=setup"?>" name="setup" onkeyrightset="{filefirst}" onkeyleftset="setup" onkeydownset="setup" onkeyupset="web" class="menu" style="width:180">&nbsp;{setup}&nbsp;</a></td>
+									<td height="40" valign="middle" align="right"><img src="{theme_path}/images/rect.png" width="16" height="12"></td>
+								</tr>
+	 						</table>
+						</td>
+					</tr>
+<? } else { ?>
+<?
+
+$dir = opendir($setupdir);
+
+while($list = readdir($dir)) {
+
+	if ( substr($list, -4) == ".htm" || substr($list, -4) == "html") {
+		foreach ($setup_include_list as $key => $value) { if ($list == $value) { $files[] = $list; $titles[] = $key; }
+		} unset($value); unset($key);
+	}
+}
+
+closedir($dir);
+?>
+					<tr>
+						<td align="right" >
+							<table border="0" cellspacing="0" cellpadding="0"> 
+	 							<tr>
+									<td width="250" valign="top" align="right"><a href="{media}" name="media" onkeyleftset="#self" onkeyupset="<?=$files[0]?>" class="menu" style="width:180"><font size = "2">&nbsp;Home&nbsp;</font></a></td>
+									<td width="20" height="20" valign="top" align="right"><img src="{theme_path}/images/rect.png" width="16" height="12"></td>
+								</tr>
+<?
+for ($n = count($files)-1; $n >= 0; $n--) { 
+	$dwn = ($n > 0) ? $files[$n-1] : "media";
+	$up = ($n < count($files)-1) ? $files[$n+1] : "media";
+?>
+								<tr>
+									<td valign="top" align="right"><a href="<?="$link/index.php?path=$path&opt=$files[$n]"?>" name="<?=$files[$n]?>" onkeyleftset="#self" onkeydownset="<?=$dwn?>" onkeyupset="<?=$up?>" class="menu" style="width:180"><font size = "2">&nbsp;<?=$titles[$n]?>&nbsp;</font></a></td>
+									<td height="20" valign="top" align="right"><img src="{theme_path}/images/rect.png" width="16" height="12"></td>
+								</tr>
+<? } ?>
+								<tr>
+									<td valign="top" align="right"><?/** Empty **/?></td>
+									<td height="20" valign="top" align="right"><?/** Empty **/?></td>
+								</tr>
+	 						</table>
+						</td>
+					</tr>
+<? } ?>

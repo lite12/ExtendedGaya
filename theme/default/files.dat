@@ -1,0 +1,142 @@
+<? 
+global $filefirst, $filelast, $path, $device, $device_tag;
+
+$filefirst = "";
+
+require("lib/config.php");
+
+if ($device_tag == "[NFS]") {	
+	$mountpath = substr($device, 6, (strlen($device)-6));
+	
+	exec("mount | grep \"$mountpath\"", $output);
+	$mountpath = str_replace(array("::"), array(":/"), $mountpath);
+	
+	if (count($output) == 0) {
+		$bin = fopen("mount.cgi.redirect", 'wb'); fwrite($bin, "$link/index.php?path=$path"); fclose($bin);
+		echo "<meta http-equiv='refresh' content='0;$mountCGI?smb.cmd=mount&smb.opt=nfs://$mountpath&smb.user=&smb.passwd='>";
+		exit;
+	} unset($output);
+} elseif ($device_tag == "[SMB]") {
+	$mountpath = substr($device, 6, (strlen($device)-6));
+
+	exec("mount | grep \"$mountpath\"", $output);
+	$mountpath = str_replace(array(":"), array("/"), $mountpath);
+	
+	if (count($output) == 0) {
+		$bin = fopen("mount.cgi.redirect", 'wb'); fwrite($bin, "$link/index.php?path=$path"); fclose($bin);
+		echo "<meta http-equiv='refresh' content='0;$mountCGI?smb.cmd=mount&smb.opt=smb://$mountpath&smb.user=&smb.passwd='>";
+		exit;
+	} unset($output);
+}
+
+$dir = opendir($path);
+
+while($list = readdir($dir)) {
+	if (substr($list,0,1) != ".") {
+	$files[] = $list; }
+}
+closedir($dir); 
+
+usort($files, "winSort");
+
+?>
+<?
+	$num = count($files);
+	$pageSize = $maxFiles;
+	$page = ($_GET['pg'] >= 0) ? $_GET['pg'] : intval($num/$maxFiles);
+	$page -= ($_GET['goto'] == "Prev") ? 1 : 0;
+	$page += ($_GET['goto'] == "Next") ? 1 : 0;
+	$page = (($maxFiles*$page)+1 > $num) ? 0 : $page;
+?>
+			<table border="0" cellspacing="0" cellpadding="0">
+	 				<tr>
+	 					<td height="40">
+							<a href="#{filefirst}" ONFOCUSSET="{filefirst}">&nbsp;</a>
+	 						<a href="javascript: location.replace('<?=$link."/index.php?path=".$path?>&pg=<?=($page > 0) ? $page-1 : intval($num/$maxFiles) ?>')" tvid="PGUP"></a>
+	 						<a href="javascript: location.replace('<?=$link."/index.php?path=".$path?>&pg=<?=($page > 0) ? $page-1 : intval($num/$maxFiles) ?>')" <?=($num <= $maxFiles) ? "ONFOCUSSET=\"{filelast}\"" : "onfocusload"?>><font size="1">&nbsp;</font></a>
+	 					</td>
+	 				</tr>
+	 				<tr>
+	 					<td width="730" height="30" align="right" valign="top">
+	 						<table border="0" cellspacing="0" cellpadding="0">
+	 							<tr>
+	 								<td width="30"><img src="<?= ($page > 0) ? $template_path."/images/up_on.png" : $template_path."/images/up_off.png" ?>"></td>
+	 								<td width="30"><img src="<?=( (($page*$pageSize)+$pageSize) < $num ) ? $template_path."/images/down_on.png" : $template_path."/images/down_off.png" ?>"></td>
+	 							</tr>
+	 						</table>
+	 					</td>
+	 				</tr>
+<? /*-- BEGINLISTING --*/ ?>
+<? 
+$x = ($maxFiles*$page)+1;
+
+$icon_width = intval($relative_size*45);
+$icon_height = intval($relative_size*35);
+$list_height = intval($relative_size*46);
+$separator_height = intval($relative_size*3);
+
+for ($n = $x-1; $n<(($page*$pageSize)+$pageSize); $n++) { if ($n>=$num){ break; }
+
+$FILE_INDEX = ($x < 10) ? "0".$x : $x; 
+
+$filelast = $FILE_INDEX;
+$filefirst = ($filefirst == "") ? $FILE_INDEX : $filefirst;
+
+$filetype = (is_dir($path.$files[$n])) ? "folder" : getFileType($files[$n]);
+$fileicon = $template_path."/images/list_".$filetype.".png";
+$stream = getStreamType($filetype); 
+
+$href = (is_dir($path.$files[$n]."/")) ? $link."/index.php?path=".$path.$files[$n]."/" : "file://".$path."$files[$n]";
+
+if ($stream == "pod") {
+	$stream = "pod=\"3,1,$href\"";
+	$href="mute";
+}
+
+?>
+	 				<tr>
+	 					<td>
+	 						<table border="0" cellspacing="0" cellpadding="0" background="<?=$template_path?>/images/list_bar.png">
+	 							<tr>
+	 								<td width="70" height="<?=$list_height?>" align="right" class="list"><?=$FILE_INDEX?></td>
+	 								<td width="80" align="right"><img src="<?=$fileicon?>" width="<?=$icon_width?>" height="<?=$icon_height?>"></td>
+	 								<td width="570"><a href="<?=$href?>" <?=$stream?> name="<?=$FILE_INDEX?>" onkeyleftset="media" onkeyrightset="<?=$FILE_INDEX?>" style="width:560" tvid="<?=$FILE_INDEX?>" class="list" alt="<?=$filetype?>" ><marquee behavior=focus>&nbsp;&nbsp;<?=$files[$n]?></marquee></a></td>
+	 								<td width="10"></td>
+	 							</tr>
+	 						</table>
+	 					</td>
+	 				</tr>
+	 				<tr><td height="<?=$separator_height?>"></td></tr>
+<? /*-- NEXT --*/ ?>
+<? $x++; } ?>
+<? /*-- ENDLISTING --*/ ?>
+					<tr>
+	 					<td height="<?=$icon_height?>" align="right">
+	 						<table border="0" cellspacing="0" cellpadding="0">
+	 							<tr>
+	 								<td height="<?=$icon_height?>" class="pagination"><?=$maxFiles*$page+1?> - <?=$x-1?> / <?=$num?> items</td>
+	 								<td width="10"></td>
+	 							</tr>
+	 							<tr>
+	 								<td>
+<? /*-- STARTSHORTCUTS --*/ ?>
+<? for ($v = 0, $p = 0; $v <= ($num+$maxFiles); $v += 10, $p = intval(($v-1)/$maxFiles) ) { ?>
+<? if ($p == $page) { continue; } ?><? $v = ($v == 0) ? "00" : $v ?>
+<a href="javascript: location.replace('<?=$link."/index.php?path=".$path?>&pg=<?=$p?>')" name="<?=$v?>" tvid="<?=$v?>" alt="<?=$v?>"></a>
+<? } ?>
+<? foreach ($Bookmarks as $key => $value) { ?>
+<a href="<?=$value?>" name="<?=$key?>" tvid="<?=$key?>" alt="<?=$key?>"></a>
+<? } unset($value); ?>
+<? /*-- ENDSHORTCUTS --*/ ?>
+	 									<a href="javascript: location.replace('<?=$link."/index.php?path=".$path?>&pg=<?=$page+1?>')" tvid="PGDN"></a>
+										<a href="javascript: location.replace('<?=$link."/index.php?path=".$path?>&pg=<?=$page+1?>')" <?=($num <= $maxFiles) ? "ONFOCUSSET=\"$filefirst\"" : "onfocusload"?>><font size="1">&nbsp;</font></a>
+									</td>
+								</tr>
+								<tr>
+									<td></td>
+									<td></td>
+								</tr>
+	 						</table>
+	 					</td>
+	 				</tr>
+	 			</table>
